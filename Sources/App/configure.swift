@@ -31,5 +31,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: Smartphone.self, database: .sqlite)
     migrations.add(model: Laptop.self, database: .sqlite)
     migrations.add(model: TV.self, database: .sqlite)
+    migrations.add(model: User.self, database: .sqlite)
+    migrations.add(model: CartItem.self, database: .sqlite)
     services.register(migrations)
 }
