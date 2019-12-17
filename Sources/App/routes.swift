@@ -21,9 +21,12 @@ public func routes(_ router: Router) throws {
     router.delete("tv", TV.parameter, use: tvController.delete)
 
     let userController = UserController()
-    router.post("user/register", use: userController.create)
-    router.delete("user", use: userController.delete)
-    router.post("user/update", use: userController.update)
+    router.get("user", use: userController.index)
+    router.post("user", use: userController.testUpdate)
+    router.post("user/authorize", use: userController.authorize)
+    router.post("user/register", use: userController.register)
+    router.post("user/guest", use: userController.authorizeAsGuest)
+    router.delete("user", User.parameter, use: userController.delete)
 
     let cartController = CartController()
     router.get("cart", use: cartController.index)

@@ -8,20 +8,15 @@
 import FluentSQLite
 import Vapor
 
-final class UserForm: SQLiteModel {
-    var id: Int?
+final class UserForm {
     var login: String
     var password: String
 
-    init(id: Int? = nil,
-         login: String,
+    init(login: String,
          password: String) {
-        self.id = id
         self.login = login
         self.password = password
     }
 }
 
-extension UserForm: Migration { }
 extension UserForm: Content { }
-extension UserForm: Parameter { }
