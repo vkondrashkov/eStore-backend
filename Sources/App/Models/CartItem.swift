@@ -10,6 +10,7 @@ import Vapor
 
 final class CartItem: SQLiteModel {
     var id: Int?
+    var ownerId: Int
     var productId: Int
     var imageUrl: String?
     var name: String
@@ -17,12 +18,14 @@ final class CartItem: SQLiteModel {
     var price: Int
 
     init(id: Int? = nil,
-         imageUrl: String?,
+         ownerId: Int,
          productId: Int,
+         imageUrl: String?,
          name: String,
          brandName: String,
          price: Int) {
         self.id = id
+        self.ownerId = ownerId
         self.productId = productId
         self.imageUrl = imageUrl
         self.name = name

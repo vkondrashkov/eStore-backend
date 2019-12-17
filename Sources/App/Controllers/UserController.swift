@@ -60,27 +60,26 @@ final class UserController {
         }
     }
 
-    func update(_ req: Request) throws -> Future<User> {
-        return try req.content.decode(User.self).flatMap { user in
-            return user.update(on: req)
-        }
-    }
-
-    func testUpdate(_ req: Request) throws -> Future<UserResponse> {
-        return try req.content.decode(UserResponse.self).flatMap { userResponse in
-            return User.find(userResponse.id, on: req).flatMap(to: UserResponse.self) { user in
-                guard let user = user else { throw Abort(HTTPResponseStatus.notFound) }
-                let newUser = User(
-                    id: user.id,
-                    username: userResponse.username,
-                    password: user.password,
-                    email: userResponse.email,
-                    fullname: userResponse.fullname,
-                    roleRawValue: userResponse.roleRawValue
-                )
-                return newUser.update(on: req).map(to: UserResponse.self) { user in
-                    guard let response = UserResponse(user: user) else { throw Abort(HTTPResponseStatus.badRequest) }
-                    return response
+    func update(_ req: Request) throws -> Future<UserResponse> {
+        guard let userId = Int(req.http.headers["userId"].first ?? "") else { throw Abort(HTTPResponseStatus.unauthorized) }
+        return User.find(userId, on: req).flatMap(to: UserResponse.self) { user in
+            guard let user = user else { throw Abort(HTTPResponseStatus.badRequest) }
+            guard user.roleRawValue >= User.Role.moderator.rawValue else { throw Abort(HTTPResponseStatus.forbidden) }
+            return try req.content.decode(UserResponse.self).flatMap { userResponse in
+                return User.find(userResponse.id, on: req).flatMap(to: UserResponse.self) { user in
+                    guard let user = user else { throw Abort(HTTPResponseStatus.notFound) }
+                    let newUser = User(
+                        id: user.id,
+                        username: userResponse.username,
+                        password: user.password,
+                        email: userResponse.email,
+                        fullname: userResponse.fullname,
+                        roleRawValue: userResponse.roleRawValue
+                    )
+                    return newUser.update(on: req).map(to: UserResponse.self) { user in
+                        guard let response = UserResponse(user: user) else { throw Abort(HTTPResponseStatus.badRequest) }
+                        return response
+                    }
                 }
             }
         }

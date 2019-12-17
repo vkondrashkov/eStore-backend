@@ -22,7 +22,7 @@ public func routes(_ router: Router) throws {
 
     let userController = UserController()
     router.get("user", use: userController.index)
-    router.post("user", use: userController.testUpdate)
+    router.post("user", use: userController.update)
     router.post("user/authorize", use: userController.authorize)
     router.post("user/register", use: userController.register)
     router.post("user/guest", use: userController.authorizeAsGuest)
@@ -32,7 +32,4 @@ public func routes(_ router: Router) throws {
     router.get("cart", use: cartController.index)
     router.post("cart", use: cartController.add)
     router.delete("cart", CartItem.parameter, use: cartController.delete)
-
-//    let cartController = CartController()
-//    router.get("cart", use: cartController.index)
 }
