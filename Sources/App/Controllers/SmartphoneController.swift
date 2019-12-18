@@ -26,6 +26,23 @@ final class SmartphoneController {
         }
     }
 
+    func update(_ req: Request) throws -> Future<Smartphone> {
+        let smartphoneId = try req.parameters.next(Int.self)
+        guard let userId = Int(req.http.headers["userId"].first ?? "") else { throw Abort(HTTPResponseStatus.unauthorized) }
+        return User.find(userId, on: req).flatMap(to: Smartphone.self) { user in
+            guard let user = user else { throw Abort(HTTPResponseStatus.badRequest) }
+            guard user.roleRawValue >= User.Role.contentMaker.rawValue else { throw Abort(HTTPResponseStatus.forbidden) }
+
+            return try req.content.decode(Smartphone.self).flatMap { newSmartphone in
+                return Smartphone.find(smartphoneId, on: req).flatMap(to: Smartphone.self) { smartphone in
+                    guard let oldSmartphoneId = smartphone?.id else { throw Abort(HTTPResponseStatus.notFound) }
+                    newSmartphone.id = oldSmartphoneId
+                    return newSmartphone.save(on: req)
+                }
+            }
+        }
+    }
+
     func delete(_ req: Request) throws -> Future<HTTPStatus> {
         return try req.parameters.next(Smartphone.self).flatMap { smartphone in
             return smartphone.delete(on: req)

@@ -14,7 +14,7 @@ final class CartController {
         return User.find(userId, on: req).flatMap(to: [CartItem].self) { user in
             guard let user = user else { throw Abort(HTTPResponseStatus.badRequest) }
             guard let userId = user.id else { throw Abort(HTTPResponseStatus.badRequest) }
-            return CartItem.query(on: req).filter(\CartItem.id == userId).all()
+            return CartItem.query(on: req).filter(\CartItem.ownerId == userId).all()
         }
     }
 
@@ -23,12 +23,6 @@ final class CartController {
         return TV.find(id, on: req).map(to: TV.self) { tv in
             guard let tv = tv else { throw Abort(HTTPStatus.notFound) }
             return tv
-        }
-    }
-
-    func create(_ req: Request) throws -> Future<TV> {
-        return try req.content.decode(TV.self).flatMap { smartphone in
-            return smartphone.save(on: req)
         }
     }
 
@@ -44,10 +38,11 @@ final class CartController {
                 case 0:
                     result = Smartphone.find(id, on: req).flatMap { smartphone -> EventLoopFuture<CartItem> in
                         guard let smartphone = smartphone else { throw Abort(HTTPResponseStatus.badRequest) }
+                        guard let productId = smartphone.id else { throw Abort(HTTPResponseStatus.badRequest) }
                         let cartItem = CartItem(
                             id: nil,
                             ownerId: ownerId,
-                            productId: 0,
+                            productId: productId,
                             imageUrl: smartphone.imageUrl,
                             name: smartphone.name,
                             brandName: smartphone.brandName,
