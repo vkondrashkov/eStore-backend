@@ -6,6 +6,7 @@
 //
 
 import Vapor
+import FluentSQLite
 
 final class LaptopController {
     func index(_ req: Request) throws -> Future<[Laptop]> {
@@ -22,7 +23,13 @@ final class LaptopController {
 
     func create(_ req: Request) throws -> Future<Laptop> {
         return try req.content.decode(Laptop.self).flatMap { laptop in
-            return laptop.save(on: req)
+            return Laptop.query(on: req).filter(\.brandName == laptop.brandName).filter(\.name == laptop.name).all().flatMap(to: Laptop.self) { laptops in
+                if laptops.isEmpty {
+                    return laptop.save(on: req)
+                } else {
+                    throw Abort(HTTPStatus.badRequest)
+                }
+            }
         }
     }
 

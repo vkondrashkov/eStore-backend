@@ -6,6 +6,7 @@
 //
 
 import Vapor
+import FluentSQLite
 
 final class TVController {
     func index(_ req: Request) throws -> Future<[TV]> {
@@ -21,8 +22,14 @@ final class TVController {
     }
 
     func create(_ req: Request) throws -> Future<TV> {
-        return try req.content.decode(TV.self).flatMap { smartphone in
-            return smartphone.save(on: req)
+        return try req.content.decode(TV.self).flatMap { tv in
+            return TV.query(on: req).filter(\.brandName == tv.brandName).filter(\.name == tv.name).all().flatMap(to: TV.self) { tvs in
+                if tvs.isEmpty {
+                    return tv.save(on: req)
+                } else {
+                    throw Abort(HTTPStatus.badRequest)
+                }
+            }
         }
     }
 
